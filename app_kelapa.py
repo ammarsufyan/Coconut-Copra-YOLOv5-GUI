@@ -79,24 +79,28 @@ def update_frame():
             img_name_predicted = "capture_img_predicted"
             results.save(save_dir=img_name_predicted, exist_ok=True)
             
-            # Get bounding box width and height
-            xyxy_df = results.pandas().xyxy[0]
-            xmin = xyxy_df['xmin'].values[0].astype(float)
-            ymin = xyxy_df['ymin'].values[0].astype(float)
-            xmax = xyxy_df['xmax'].values[0].astype(float)
-            ymax = xyxy_df['ymax'].values[0].astype(float)
+            try:
+                # Get bounding box width and height
+                xyxy_df = results.pandas().xyxy[0]
+                xmin = xyxy_df['xmin'].values[0].astype(float)
+                ymin = xyxy_df['ymin'].values[0].astype(float)
+                xmax = xyxy_df['xmax'].values[0].astype(float)
+                ymax = xyxy_df['ymax'].values[0].astype(float)
 
-            # Count the width and height
-            object_width = xmax - xmin
-            object_height = ymax - ymin
-            
-            # Convert pixel to cm
-            object_width = object_width * 0.026458
-            object_height = object_height * 0.026458
+                # Count the width and height
+                object_width = xmax - xmin
+                object_height = ymax - ymin
+                
+                # Convert pixel to cm
+                object_width = object_width * 0.026458
+                object_height = object_height * 0.026458
 
-            # Round decimals
-            object_width = round(object_width, 2)
-            object_height = round(object_height, 2)
+                # Round decimals
+                object_width = round(object_width, 2)
+                object_height = round(object_height, 2)
+            except:
+                object_width = 0
+                object_height = 0
             
             # Show it to the GUI
             image_tk = ImageTk.PhotoImage(Image.open(img_name_predicted + "/capture_img.jpg"))
