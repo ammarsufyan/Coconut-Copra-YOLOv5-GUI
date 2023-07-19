@@ -91,7 +91,7 @@ def update_frame():
             # Get the current datetime
             now = datetime.now()
             # Format the datetime as desired
-            formatted_datetime = now.strftime("%Y-%m-%d %S.%f")
+            formatted_datetime = now.strftime("%Y-%m-%d-%S.%f")
             
             try:
                 check = results.pandas().xyxy[0].round(3).round(2)['name'][0]
