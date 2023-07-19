@@ -31,10 +31,10 @@ notDefined_counter = 0
 def show_alert(subject, message):
     messagebox.showinfo(subject, message)
 
-def update_text(formatted_datetime, hasil, width, height, class_counter, total_counter):
+def update_text(formatted_datetime, quality, width, height, class_counter, total_counter):
     text_area.configure(state='normal')
     text_area.insert("end", "\n Time: {} \n Quality: {} \n Width: {} cm \n Height: {} cm \n Class_Counter: {} \n Total_Counter: {} \n"
-                     .format(formatted_datetime, hasil, width, height, class_counter, total_counter))
+                     .format(formatted_datetime, quality, width, height, class_counter, total_counter))
     text_area.configure(state='disabled')
     text_area.see("end")
     
@@ -129,29 +129,29 @@ def update_frame():
                 check = "not_defined"
                 
             if check == 'Standar':
-                hasil = 'Standar'
+                quality = 'Standar'
                 standar_counter += 1
                 total_counter += 1
                 # Update the text area
-                update_text(formatted_datetime, hasil, object_width, object_height, standar_counter, total_counter)
+                update_text(formatted_datetime, quality, object_width, object_height, standar_counter, total_counter)
                 # Save to CSV
                 save_to_csv()
                 # SERIAL ACTIONS
             elif check == 'NonStandar':
-                hasil = 'NonStandar'
+                quality = 'NonStandar'
                 nonStandar_counter += 1
                 total_counter += 1
                 # Update the text area
-                update_text(formatted_datetime, hasil, object_width, object_height, nonStandar_counter, total_counter)
+                update_text(formatted_datetime, quality, object_width, object_height, nonStandar_counter, total_counter)
                 # Save to CSV
                 save_to_csv()
                 # SERIAL ACTIONS
             elif check == 'not_defined':
-                hasil = 'not_defined'
+                quality = 'not_defined'
                 notDefined_counter += 1
                 total_counter += 1
                 # Update the text area
-                update_text(formatted_datetime, hasil, object_width, object_height, notDefined_counter, total_counter)
+                update_text(formatted_datetime, quality, object_width, object_height, notDefined_counter, total_counter)
                 # Save to CSV
                 save_to_csv()
                 # SERIAL ACTIONS
