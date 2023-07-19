@@ -74,7 +74,7 @@ def update_frame():
             
             # Get the results and print
             # Automatically capture the frame
-            img_name = "capture_img.png"
+            img_name = "capture_img.jpg"
             cv2.imwrite(img_name, resized_frame)
             results = model(img_name)
             
