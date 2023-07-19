@@ -22,7 +22,7 @@ model = torch.hub.load('yolov5', 'custom', path='models/KelapaV3_YOLOv5.pt', sou
 
 # Declare variables
 get_datetime_file = datetime.now()
-csv_file_path = "log_kelapa_{}.csv".format(get_datetime_file.strftime("%Y-%m-%d-%S"))
+csv_file_path = "log/log_kelapa_{}.csv".format(get_datetime_file.strftime("%Y-%m-%d-%S"))
 total_counter = 0
 standar_counter = 0
 nonStandar_counter = 0
@@ -33,7 +33,7 @@ def show_alert(subject, message):
 
 def update_text(formatted_datetime, hasil, width, height, class_counter, total_counter):
     text_area.configure(state='normal')
-    text_area.insert("end", "\n Waktu: {} \n Kualitas: {} \n Width: {} cm \n Heigth: {} cm \n Class Counter: {} \n Total Counter: {} \n"
+    text_area.insert("end", "\n Time: {} \n Quality: {} \n Width: {} cm \n Height: {} cm \n Class_Counter: {} \n Total_Counter: {} \n"
                      .format(formatted_datetime, hasil, width, height, class_counter, total_counter))
     text_area.configure(state='disabled')
     text_area.see("end")
@@ -47,8 +47,11 @@ def save_to_csv():
     data = [line.split(": ")[1] for line in lines if line]
 
     # Define the header row and data rows
-    header_row = ["Waktu", "Kualitas", "Width", "Height", "Class Counter", "Total Counter"]
+    header_row = ["Time", "Quality", "Width", "Height", "Class_Counter", "Total_Counter"]
     data_rows = [data[i:i+6] for i in range(0, len(data), 6)]
+    
+    # Create the directory if it doesn't exist
+    os.makedirs(os.path.dirname("log/"), exist_ok=True)
 
     # Write the contents to the CSV file
     with open(csv_file_path, "w", newline="") as file:
