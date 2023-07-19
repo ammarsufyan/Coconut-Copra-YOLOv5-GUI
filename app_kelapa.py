@@ -21,8 +21,8 @@ from datetime import datetime
 model = torch.hub.load('yolov5', 'custom', path='models/KelapaV3_YOLOv5.pt', source='local')
 
 # Declare variables
-now = datetime.now()
-csv_file_path = "log_kelapa_{}.csv".format(now.strftime("%Y-%m-%d-%S"))
+get_datetime_file = datetime.now()
+csv_file_path = "log_kelapa_{}.csv".format(get_datetime_file.strftime("%Y-%m-%d-%S"))
 total_counter = 0
 standar_counter = 0
 nonStandar_counter = 0
@@ -109,9 +109,9 @@ def update_frame():
             image_label.after(120, update_frame)
                        
             # Get the current datetime
-            now = datetime.now()
+            get_datetime_now = datetime.now()
             # Format the datetime as desired
-            formatted_datetime = now.strftime("%Y-%m-%d-%S.%f")
+            formatted_datetime = get_datetime_now.strftime("%Y-%m-%d-%S.%f")
             
             try:
                 check = results.pandas().xyxy[0].round(3).round(2)['name'][0]
