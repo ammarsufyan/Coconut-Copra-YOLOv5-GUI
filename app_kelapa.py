@@ -72,10 +72,13 @@ def update_frame():
             # Resize the frame to a compatible size for YOLOv5
             resized_frame = cv2.resize(frame, (640, 640))
             
-            # Get the results and print
+            # Create the directory if it doesn't exist
+            os.makedirs(os.path.dirname("capture_img/"), exist_ok=True)
             # Automatically capture the frame
-            img_name = "capture_img.jpg"
+            img_name = "capture_img/capture_img.jpg"
+            # Save the frame as an image file
             cv2.imwrite(img_name, resized_frame)
+            # Load the image file
             results = model(img_name)
             
             # Save the predicted image
