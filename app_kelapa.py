@@ -113,7 +113,7 @@ def update_frame():
             image_label.image = image_tk
             
             # Schedule the next frame update
-            image_label.after(120, update_frame)
+            image_label.after(60, update_frame)
                        
             # Get the current datetime
             get_datetime_now = datetime.now()
