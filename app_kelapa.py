@@ -31,10 +31,10 @@ notDefined_counter = 0
 def show_alert(subject, message):
     messagebox.showinfo(subject, message)
 
-def update_text(formatted_datetime, hasil, class_counter, total_counter):
+def update_text(formatted_datetime, hasil, width, height, class_counter, total_counter):
     text_area.configure(state='normal')
-    text_area.insert("end", "\n Waktu: {} \n Kualitas: {} \n Class Counter: {} \n Total Counter: {} \n"
-                     .format(formatted_datetime, hasil, class_counter, total_counter))
+    text_area.insert("end", "\n Waktu: {} \n Kualitas: {} \n Width: {} cm \n Heigth: {} cm \n Class Counter: {} \n Total Counter: {} \n"
+                     .format(formatted_datetime, hasil, width, height, class_counter, total_counter))
     text_area.configure(state='disabled')
     text_area.see("end")
     
@@ -47,8 +47,8 @@ def save_to_csv():
     data = [line.split(": ")[1] for line in lines if line]
 
     # Define the header row and data rows
-    header_row = ["Waktu", "Kualitas", "Class Counter", "Total Counter"]
-    data_rows = [data[i:i+4] for i in range(0, len(data), 4)]
+    header_row = ["Waktu", "Kualitas", "Width", "Height", "Class Counter", "Total Counter"]
+    data_rows = [data[i:i+6] for i in range(0, len(data), 6)]
 
     # Write the contents to the CSV file
     with open(csv_file_path, "w", newline="") as file:
@@ -66,19 +66,6 @@ def update_frame():
         # Read the video frame
         ret, frame = video_capture.read()
         if ret:
-            # Convert the frame to RGB format
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-            # Create an ImageTk object
-            image_tk = ImageTk.PhotoImage(image=Image.fromarray(frame_rgb))
-
-            # Update the label with the new image
-            image_label.configure(image=image_tk)
-            image_label.image = image_tk
-            
-            # Schedule the next frame update
-            image_label.after(120, update_frame)
-
             # Resize the frame to a compatible size for YOLOv5
             resized_frame = cv2.resize(frame, (640, 640))
             
@@ -87,6 +74,39 @@ def update_frame():
             img_name = "capture_img.png"
             cv2.imwrite(img_name, resized_frame)
             results = model(img_name)
+            
+            # Save the predicted image
+            img_name_predicted = "capture_img_predicted"
+            results.save(save_dir=img_name_predicted, exist_ok=True)
+            
+            # Get bounding box width and height
+            xyxy_df = results.pandas().xyxy[0]
+            xmin = xyxy_df['xmin'].values[0].astype(float)
+            ymin = xyxy_df['ymin'].values[0].astype(float)
+            xmax = xyxy_df['xmax'].values[0].astype(float)
+            ymax = xyxy_df['ymax'].values[0].astype(float)
+
+            # Count the width and height
+            object_width = xmax - xmin
+            object_height = ymax - ymin
+            
+            # Convert pixel to cm
+            object_width = object_width * 0.026458
+            object_height = object_height * 0.026458
+
+            # Round decimals
+            object_width = round(object_width, 2)
+            object_height = round(object_height, 2)
+            
+            # Show it to the GUI
+            image_tk = ImageTk.PhotoImage(Image.open(img_name_predicted + "/capture_img.jpg"))
+            
+            # Update the label with the new image
+            image_label.configure(image=image_tk)
+            image_label.image = image_tk
+            
+            # Schedule the next frame update
+            image_label.after(120, update_frame)
                        
             # Get the current datetime
             now = datetime.now()
@@ -103,7 +123,7 @@ def update_frame():
                 standar_counter += 1
                 total_counter += 1
                 # Update the text area
-                update_text(formatted_datetime, hasil, standar_counter, total_counter)
+                update_text(formatted_datetime, hasil, object_width, object_height, standar_counter, total_counter)
                 # Save to CSV
                 save_to_csv()
                 # SERIAL ACTIONS
@@ -112,7 +132,7 @@ def update_frame():
                 nonStandar_counter += 1
                 total_counter += 1
                 # Update the text area
-                update_text(formatted_datetime, hasil, nonStandar_counter, total_counter)
+                update_text(formatted_datetime, hasil, object_width, object_height, nonStandar_counter, total_counter)
                 # Save to CSV
                 save_to_csv()
                 # SERIAL ACTIONS
@@ -121,7 +141,7 @@ def update_frame():
                 notDefined_counter += 1
                 total_counter += 1
                 # Update the text area
-                update_text(formatted_datetime, hasil, notDefined_counter, total_counter)
+                update_text(formatted_datetime, hasil, object_width, object_height, notDefined_counter, total_counter)
                 # Save to CSV
                 save_to_csv()
                 # SERIAL ACTIONS
