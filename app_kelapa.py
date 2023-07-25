@@ -163,7 +163,7 @@ def update_frame():
                         nonStandar_counter += 1
                         total_counter += 1
                         # Update the text area
-                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, standar_counter, total_counter)
+                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, nonStandar_counter, total_counter)
                         # Save to CSV
                         save_to_csv()
                         # SERIAL ACTIONS
@@ -173,7 +173,7 @@ def update_frame():
                         # notDefined_counter += 1
                         # total_counter += 1
                         # # Update the text area
-                        # update_text(formatted_datetime, quality, object_width, object_height, notDefined_counter, total_counter)
+                        # update_text(formatted_datetime, quality, accuracy, object_width, object_height, notDefined_counter, total_counter)
                         # # Save to CSV
                         # save_to_csv()
                         # # SERIAL ACTIONS
