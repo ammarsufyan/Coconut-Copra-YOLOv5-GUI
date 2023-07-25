@@ -31,10 +31,10 @@ notDefined_counter = 0
 def show_alert(subject, message):
     messagebox.showinfo(subject, message)
 
-def update_text(formatted_datetime, quality, width, height, class_counter, total_counter):
+def update_text(formatted_datetime, quality, accuracy, width, height, class_counter, total_counter):
     text_area.configure(state='normal')
-    text_area.insert("end", "\n Time: {} \n Quality: {} \n Width: {} cm \n Height: {} cm \n Class_Counter: {} \n Total_Counter: {} \n"
-                     .format(formatted_datetime, quality, width, height, class_counter, total_counter))
+    text_area.insert("end", "\n Time: {} \n Quality: {} \n Accuracy: {}% \n Width: {} cm \n Height: {} cm \n Class_Counter: {} \n Total_Counter: {} \n"
+                     .format(formatted_datetime, quality, accuracy, width, height, class_counter, total_counter))
     text_area.configure(state='disabled')
     text_area.see("end")
     
@@ -47,8 +47,8 @@ def save_to_csv():
     data = [line.split(": ")[1] for line in lines if line]
 
     # Define the header row and data rows
-    header_row = ["Time", "Quality", "Width", "Height", "Class_Counter", "Total_Counter"]
-    data_rows = [data[i:i+6] for i in range(0, len(data), 6)]
+    header_row = ["Time", "Quality", "Accuracy", "Width", "Height", "Class_Counter", "Total_Counter"]
+    data_rows = [data[i:i+7] for i in range(0, len(data), 7)] 
     
     # Create the directory if it doesn't exist
     os.makedirs(os.path.dirname("log/"), exist_ok=True)
@@ -109,6 +109,7 @@ def update_frame():
                         ymin = xyxy_df['ymin'].values[0].astype(float)
                         xmax = xyxy_df['xmax'].values[0].astype(float)
                         ymax = xyxy_df['ymax'].values[0].astype(float)
+                        accuracy = xyxy_df['confidence'].values[0].astype(float)
 
                         # Count the width and height
                         object_width = xmax - xmin
@@ -117,13 +118,18 @@ def update_frame():
                         # Convert pixel to cm
                         object_width = object_width * 0.026458
                         object_height = object_height * 0.026458
+                        
+                        # Convert accuracy to percentage
+                        accuracy = accuracy * 100
 
                         # Round decimals
                         object_width = round(object_width, 2)
                         object_height = round(object_height, 2)
+                        accuracy = round(accuracy, 2)
                     except:
                         object_width = 0
                         object_height = 0
+                        accuracy = 0
                     
                     # Show it to the GUI
                     image_tk = ImageTk.PhotoImage(Image.open(img_name_predicted + "/capture_img.jpg"))
@@ -140,14 +146,14 @@ def update_frame():
                     try:
                         check = results.pandas().xyxy[0].round(3).round(2)['name'][0]
                     except:
-                        check = "not_defined"
+                        check = "NotDefined"
                         
                     if check == 'Standar':
                         quality = 'Standar'
                         standar_counter += 1
                         total_counter += 1
                         # Update the text area
-                        update_text(formatted_datetime, quality, object_width, object_height, standar_counter, total_counter)
+                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, standar_counter, total_counter)
                         # Save to CSV
                         save_to_csv()
                         # SERIAL ACTIONS
@@ -157,13 +163,13 @@ def update_frame():
                         nonStandar_counter += 1
                         total_counter += 1
                         # Update the text area
-                        update_text(formatted_datetime, quality, object_width, object_height, nonStandar_counter, total_counter)
+                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, standar_counter, total_counter)
                         # Save to CSV
                         save_to_csv()
                         # SERIAL ACTIONS
                         #ser.write("l".encode())
-                    elif check == 'not_defined':
-                        # quality = 'not_defined'
+                    elif check == 'NotDefined':
+                        # quality = 'NotDefined'
                         # notDefined_counter += 1
                         # total_counter += 1
                         # # Update the text area
