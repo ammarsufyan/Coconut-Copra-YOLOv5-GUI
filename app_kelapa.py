@@ -4,7 +4,7 @@ from time import time
 from time import sleep
 import torch
 import cv2
-# import serial
+import serial
 import os
 import tkinter as tk
 from tkinter import ttk
@@ -15,7 +15,7 @@ import csv
 from datetime import datetime
 
 # ser = serial.Serial('COM14', 115200)
-# infrared = serial.Serial('COM4', 115200)
+infrared = serial.Serial('COM4', 115200)
 
 # Load the model
 model = torch.hub.load('yolov5', 'custom', path='models/KelapaV3_YOLOv5.pt', source='local')
@@ -65,138 +65,141 @@ def update_frame():
     global standar_counter
     global nonStandar_counter
     global notDefined_counter
+
     if video_capture is not None:
         # Read the video frame
         ret, frame = video_capture.read()
         if ret:
             # Resize the frame to a compatible size for YOLOv5
             resized_frame = cv2.resize(frame, (640, 640))
-            
-            # Create the directory if it doesn't exist
-            os.makedirs(os.path.dirname("capture_img/"), exist_ok=True)
-            # Automatically capture the frame
-            img_name = "capture_img/capture_img.jpg"
-            # Save the frame as an image file
-            cv2.imwrite(img_name, resized_frame)
-            # Load the image file
-            results = model(img_name)
-            
-            # Save the predicted image
-            img_name_predicted = "capture_img_predicted"
-            results.save(save_dir=img_name_predicted, exist_ok=True)
-            
-            try:
-                # Get bounding box width and height
-                xyxy_df = results.pandas().xyxy[0]
-                xmin = xyxy_df['xmin'].values[0].astype(float)
-                ymin = xyxy_df['ymin'].values[0].astype(float)
-                xmax = xyxy_df['xmax'].values[0].astype(float)
-                ymax = xyxy_df['ymax'].values[0].astype(float)
 
-                # Count the width and height
-                object_width = xmax - xmin
-                object_height = ymax - ymin
-                
-                # Convert pixel to cm
-                object_width = object_width * 0.026458
-                object_height = object_height * 0.026458
+            # Convert the frame to RGB format
+            frame_rgb = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
 
-                # Round decimals
-                object_width = round(object_width, 2)
-                object_height = round(object_height, 2)
-            except:
-                object_width = 0
-                object_height = 0
-            
-            # Show it to the GUI
-            image_tk = ImageTk.PhotoImage(Image.open(img_name_predicted + "/capture_img.jpg"))
-            
+            # Create an ImageTk object
+            image_tk = ImageTk.PhotoImage(image=Image.fromarray(frame_rgb))
+
             # Update the label with the new image
             image_label.configure(image=image_tk)
             image_label.image = image_tk
-            
+
             # Schedule the next frame update
-            image_label.after(60, update_frame)
-                       
-            # Get the current datetime
-            get_datetime_now = datetime.now()
-            # Format the datetime as desired
-            formatted_datetime = get_datetime_now.strftime("%Y-%m-%d-%S.%f")
-            
-            try:
-                check = results.pandas().xyxy[0].round(3).round(2)['name'][0]
-            except:
-                check = "not_defined"
-                
-            if check == 'Standar':
-                quality = 'Standar'
-                standar_counter += 1
-                total_counter += 1
-                # Update the text area
-                update_text(formatted_datetime, quality, object_width, object_height, standar_counter, total_counter)
-                # Save to CSV
-                save_to_csv()
-                # SERIAL ACTIONS
-            elif check == 'NonStandar':
-                quality = 'NonStandar'
-                nonStandar_counter += 1
-                total_counter += 1
-                # Update the text area
-                update_text(formatted_datetime, quality, object_width, object_height, nonStandar_counter, total_counter)
-                # Save to CSV
-                save_to_csv()
-                # SERIAL ACTIONS
-            elif check == 'not_defined':
-                quality = 'not_defined'
-                notDefined_counter += 1
-                total_counter += 1
-                # Update the text area
-                update_text(formatted_datetime, quality, object_width, object_height, notDefined_counter, total_counter)
-                # Save to CSV
-                save_to_csv()
-                # SERIAL ACTIONS
-                
-            # if (infrared.inWaiting() > 0):
-            #         baca = infrared.readline()
-            #         print(baca)
-            #         if baca == b'OBSTACLE\r\n':
-            #         #if baca =='c':
-            #             # Trigger 'OBSTACLE' from Serial
-            #             img_name = "capture_img.png"
-            #             cv2.imwrite(img_name, frame)
-            #             print("{} written!".format(img_name))
-            #             text_area.insert("end", "{} written! \n".format(img_name))
-            #             results = model(frame_rgb)
-            #             try:
-            #                 hasil_string = results.pandas().xyxy[0].round(3).round(2)['name'][0]
-            #                 #print(hasil_string)
-            #             except:
-            #                 hasil_string = "0"
-            #                 print(hasil_string)
-            #                 text_area.insert("end", hasil_string)
-            #             '''
-            #             try:
-            #                 results.save(save_dir='yolo_output/capture')
-            #                 #results.pandas().xyxy[0].round(3).round(2).to_excel("yolo_output/{}.xlsx".format(img_counter), index=False)
-            #             except:
-            #                 pass
-            #             '''
-            #             img_counter += 1
-            #             if hasil_string == 'Reject':
-            #                 #ser.write("r".encode())
-            #                 ser.write("l".encode())
-            #                 print("Non-Edible: Tidak dibuang!")
-            #                 print()
-            #                 text_area.insert("end", "Non-Edible: Tidak dibuang!")
-            #             if hasil_string == "0":
-            #                 print()
-            #             if hasil_string == 'Edible' or hasil_string == 'Reguler':
-            #                 #ser.write("l".encode())
-            #                 #sleep(1.5)
-            #                 ser.write("r".encode())
-            #                 print("Edible: dibuang!")
-            #                 print()
-            #                 text_area.insert("end", "Edible: dibuang!")
+            image_label.after(30, update_frame)
+
+            if (infrared.inWaiting() > 0):
+                baca = infrared.readline()
+                print(baca)
+                if baca == b'OBSTACLE\r\n':
+                    # Trigger 'OBSTACLE' from Serial
+                    
+                    # Create the directory if it doesn't exist
+                    os.makedirs(os.path.dirname("capture_img/"), exist_ok=True)
+                    # Automatically capture the frame
+                    img_name = "capture_img/capture_img.jpg"
+                    # Save the frame as an image file
+                    cv2.imwrite(img_name, resized_frame)
+                    # Load the image file
+                    results = model(img_name)
+                    
+                    # Save the predicted image
+                    img_name_predicted = "capture_img_predicted"
+                    results.save(save_dir=img_name_predicted, exist_ok=True)
+                    
+                    try:
+                        # Get bounding box width and height
+                        xyxy_df = results.pandas().xyxy[0]
+                        xmin = xyxy_df['xmin'].values[0].astype(float)
+                        ymin = xyxy_df['ymin'].values[0].astype(float)
+                        xmax = xyxy_df['xmax'].values[0].astype(float)
+                        ymax = xyxy_df['ymax'].values[0].astype(float)
+
+                        # Count the width and height
+                        object_width = xmax - xmin
+                        object_height = ymax - ymin
+                        
+                        # Convert pixel to cm
+                        object_width = object_width * 0.026458
+                        object_height = object_height * 0.026458
+
+                        # Round decimals
+                        object_width = round(object_width, 2)
+                        object_height = round(object_height, 2)
+                    except:
+                        object_width = 0
+                        object_height = 0
+                    
+                    # Show it to the GUI
+                    image_tk = ImageTk.PhotoImage(Image.open(img_name_predicted + "/capture_img.jpg"))
+                    
+                    # Update the label with the new image
+                    image_label.configure(image=image_tk)
+                    image_label.image = image_tk
+                    
+                    # Get the current datetime
+                    get_datetime_now = datetime.now()
+                    # Format the datetime as desired
+                    formatted_datetime = get_datetime_now.strftime("%Y-%m-%d-%S.%f")
+                    
+                    try:
+                        check = results.pandas().xyxy[0].round(3).round(2)['name'][0]
+                    except:
+                        check = "not_defined"
+                        
+                    if check == 'Standar':
+                        quality = 'Standar'
+                        standar_counter += 1
+                        total_counter += 1
+                        # Update the text area
+                        update_text(formatted_datetime, quality, object_width, object_height, standar_counter, total_counter)
+                        # Save to CSV
+                        save_to_csv()
+                        # SERIAL ACTIONS
+                    elif check == 'NonStandar':
+                        quality = 'NonStandar'
+                        nonStandar_counter += 1
+                        total_counter += 1
+                        # Update the text area
+                        update_text(formatted_datetime, quality, object_width, object_height, nonStandar_counter, total_counter)
+                        # Save to CSV
+                        save_to_csv()
+                        # SERIAL ACTIONS
+                    elif check == 'not_defined':
+                        quality = 'not_defined'
+                        notDefined_counter += 1
+                        total_counter += 1
+                        # Update the text area
+                        update_text(formatted_datetime, quality, object_width, object_height, notDefined_counter, total_counter)
+                        # Save to CSV
+                        save_to_csv()
+                        # SERIAL ACTIONS
+                        
+                    # if (infrared.inWaiting() > 0):
+                    #         baca = infrared.readline()
+                    #         print(baca)
+                    #         if baca == b'OBSTACLE\r\n':
+                    #         #if baca =='c':
+                    #             # Trigger 'OBSTACLE' from Serial
+                    #             img_name = "capture_img.png"
+                    #             cv2.imwrite(img_name, frame)
+                    #             print("{} written!".format(img_name))
+                    #             text_area.insert("end", "{} written! \n".format(img_name))
+                    #             results = model(frame_rgb)
+                    #             img_counter += 1
+                    #             if hasil_string == 'Reject':
+                    #                 #ser.write("r".encode())
+                    #                 ser.write("l".encode())
+                    #                 print("Non-Edible: Tidak dibuang!")
+                    #                 print()
+                    #                 text_area.insert("end", "Non-Edible: Tidak dibuang!")
+                    #             if hasil_string == "0":
+                    #                 print()
+                    #             if hasil_string == 'Edible' or hasil_string == 'Reguler':
+                    #                 #ser.write("l".encode())
+                    #                 #sleep(1.5)
+                    #                 ser.write("r".encode())
+                    #                 print("Edible: dibuang!")
+                    #                 print()
+                    #                 text_area.insert("end", "Edible: dibuang!")
     else:
         # Display the placeholder image if no frame is available
         image_label.configure(image=placeholder_image)
@@ -210,7 +213,7 @@ def start_detection():
         height = 640  # Adjust the height as desired
         
         # Open the video capture device with the desired resolution
-        video_capture = cv2.VideoCapture(1)  # Use 0 for the default camera
+        video_capture = cv2.VideoCapture(2)  # Use 0 for the default camera
         video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         
