@@ -70,11 +70,11 @@ def update_frame():
         # Read the video frame
         ret, frame = video_capture.read()
         if ret:
-            # Resize the frame to a compatible size for YOLOv5
-            resized_frame = cv2.resize(frame, (640, 640))
+            # Resize the frame for compatibility (optional)
+            #resized_frame = cv2.resize(frame, (640, 640))
 
             # Convert the frame to RGB format
-            frame_rgb = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
             # Create an ImageTk object
             image_tk = ImageTk.PhotoImage(image=Image.fromarray(frame_rgb))
@@ -82,9 +82,6 @@ def update_frame():
             # Update the label with the new image
             image_label.configure(image=image_tk)
             image_label.image = image_tk
-
-            # Schedule the next frame update
-            image_label.after(30, update_frame)
 
             if (infrared.inWaiting() > 0):
                 baca = infrared.readline()
@@ -97,7 +94,7 @@ def update_frame():
                     # Automatically capture the frame
                     img_name = "capture_img/capture_img.jpg"
                     # Save the frame as an image file
-                    cv2.imwrite(img_name, resized_frame)
+                    cv2.imwrite(img_name, frame)
                     # Load the image file
                     results = model(img_name)
                     
@@ -134,7 +131,7 @@ def update_frame():
                     # Update the label with the new image
                     image_label.configure(image=image_tk)
                     image_label.image = image_tk
-                    
+
                     # Get the current datetime
                     get_datetime_now = datetime.now()
                     # Format the datetime as desired
@@ -154,6 +151,7 @@ def update_frame():
                         # Save to CSV
                         save_to_csv()
                         # SERIAL ACTIONS
+                        #ser.write("r".encode())
                     elif check == 'NonStandar':
                         quality = 'NonStandar'
                         nonStandar_counter += 1
@@ -163,43 +161,20 @@ def update_frame():
                         # Save to CSV
                         save_to_csv()
                         # SERIAL ACTIONS
+                        #ser.write("l".encode())
                     elif check == 'not_defined':
-                        quality = 'not_defined'
-                        notDefined_counter += 1
-                        total_counter += 1
-                        # Update the text area
-                        update_text(formatted_datetime, quality, object_width, object_height, notDefined_counter, total_counter)
-                        # Save to CSV
-                        save_to_csv()
-                        # SERIAL ACTIONS
-                        
-                    # if (infrared.inWaiting() > 0):
-                    #         baca = infrared.readline()
-                    #         print(baca)
-                    #         if baca == b'OBSTACLE\r\n':
-                    #         #if baca =='c':
-                    #             # Trigger 'OBSTACLE' from Serial
-                    #             img_name = "capture_img.png"
-                    #             cv2.imwrite(img_name, frame)
-                    #             print("{} written!".format(img_name))
-                    #             text_area.insert("end", "{} written! \n".format(img_name))
-                    #             results = model(frame_rgb)
-                    #             img_counter += 1
-                    #             if hasil_string == 'Reject':
-                    #                 #ser.write("r".encode())
-                    #                 ser.write("l".encode())
-                    #                 print("Non-Edible: Tidak dibuang!")
-                    #                 print()
-                    #                 text_area.insert("end", "Non-Edible: Tidak dibuang!")
-                    #             if hasil_string == "0":
-                    #                 print()
-                    #             if hasil_string == 'Edible' or hasil_string == 'Reguler':
-                    #                 #ser.write("l".encode())
-                    #                 #sleep(1.5)
-                    #                 ser.write("r".encode())
-                    #                 print("Edible: dibuang!")
-                    #                 print()
-                    #                 text_area.insert("end", "Edible: dibuang!")
+                        # quality = 'not_defined'
+                        # notDefined_counter += 1
+                        # total_counter += 1
+                        # # Update the text area
+                        # update_text(formatted_datetime, quality, object_width, object_height, notDefined_counter, total_counter)
+                        # # Save to CSV
+                        # save_to_csv()
+                        # # SERIAL ACTIONS
+                        pass
+
+            # Schedule the next frame update
+            image_label.after(30, update_frame)
     else:
         # Display the placeholder image if no frame is available
         image_label.configure(image=placeholder_image)
@@ -208,14 +183,8 @@ def update_frame():
 def start_detection():
     global video_capture
     if video_capture is None:
-        # Set the desired resolution
-        width = 640  # Adjust the width as desired
-        height = 640  # Adjust the height as desired
-        
         # Open the video capture device with the desired resolution
         video_capture = cv2.VideoCapture(2)  # Use 0 for the default camera
-        video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         
         # Update the frame
         update_frame()
