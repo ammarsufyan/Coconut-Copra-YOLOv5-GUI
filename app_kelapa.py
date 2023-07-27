@@ -14,7 +14,7 @@ from PIL import ImageTk, Image
 import csv
 from datetime import datetime
 
-# ser = serial.Serial('COM14', 115200)
+ser = serial.Serial('COM14', 115200)
 infrared = serial.Serial('COM4', 115200)
 
 # Load the model
@@ -157,7 +157,7 @@ def update_frame():
                         # Save to CSV
                         save_to_csv()
                         # SERIAL ACTIONS
-                        #ser.write("r".encode())
+                        ser.write("r".encode())
                     elif check == 'NonStandar':
                         quality = 'NonStandar'
                         nonStandar_counter += 1
@@ -167,7 +167,7 @@ def update_frame():
                         # Save to CSV
                         save_to_csv()
                         # SERIAL ACTIONS
-                        #ser.write("l".encode())
+                        ser.write("l".encode())
                     elif check == 'NotDefined':
                         # quality = 'NotDefined'
                         # notDefined_counter += 1
