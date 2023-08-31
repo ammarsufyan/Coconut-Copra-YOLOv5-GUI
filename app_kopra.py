@@ -22,7 +22,7 @@ model = torch.hub.load('yolov5', 'custom', path='models/KopraV6_model.pt', sourc
 
 # Declare variables
 get_datetime_file = datetime.now()
-csv_file_path = "log/log_kelapa_{}.csv".format(get_datetime_file.strftime("%Y-%m-%d-%S"))
+csv_file_path = "log/log_copra_{}.csv".format(get_datetime_file.strftime("%Y-%m-%d-%S"))
 total_counter = 0
 edible_counter = 0
 reguler_counter = 0
@@ -260,7 +260,7 @@ def stop_detection():
 
 # Create the main window
 window = tk.Tk()
-window.title("Coconut Detection GUI")
+window.title("Copra Detection GUI")
 video_capture = None
 
 # Create the left frame

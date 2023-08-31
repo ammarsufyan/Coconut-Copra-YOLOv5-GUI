@@ -22,7 +22,7 @@ model = torch.hub.load('yolov5', 'custom', path='models/KelapaV4_model.pt', sour
 
 # Declare variables
 get_datetime_file = datetime.now()
-csv_file_path = "log/log_kelapa_{}.csv".format(get_datetime_file.strftime("%Y-%m-%d-%S"))
+csv_file_path = "log/log_coconut_{}.csv".format(get_datetime_file.strftime("%Y-%m-%d-%S"))
 total_counter = 0
 standar_counter = 0
 nonStandar_counter = 0
