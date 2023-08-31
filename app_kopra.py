@@ -18,14 +18,18 @@ ser = serial.Serial('COM14', 115200)
 infrared = serial.Serial('COM4', 115200)
 
 # Load the model
-model = torch.hub.load('yolov5', 'custom', path='models/KelapaV3_YOLOv5.pt', source='local')
+model = torch.hub.load('yolov5', 'custom', path='models/KopraV6_model.pt', source='local')
 
 # Declare variables
 get_datetime_file = datetime.now()
 csv_file_path = "log/log_kelapa_{}.csv".format(get_datetime_file.strftime("%Y-%m-%d-%S"))
 total_counter = 0
-standar_counter = 0
-nonStandar_counter = 0
+edible_counter = 0
+reguler_counter = 0
+reject_counter = 0
+edibleT_counter = 0
+regulerT_counter = 0
+rejectT_counter = 0
 notDefined_counter = 0
 
 def show_alert(subject, message):
@@ -62,8 +66,12 @@ def save_to_csv():
 def update_frame():
     global video_capture
     global total_counter
-    global standar_counter
-    global nonStandar_counter
+    global edible_counter
+    global reguler_counter
+    global reject_counter
+    global edibleT_counter
+    global regulerT_counter
+    global rejectT_counter
     global notDefined_counter
 
     if video_capture is not None:
@@ -148,22 +156,62 @@ def update_frame():
                     except:
                         check = "NotDefined"
                         
-                    if check == 'Standar':
-                        quality = 'Standar'
-                        standar_counter += 1
+                    if check == 'Edible':
+                        quality = 'Edible'
+                        edible_counter += 1
                         total_counter += 1
                         # Update the text area
-                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, standar_counter, total_counter)
+                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, edible_counter, total_counter)
                         # Save to CSV
                         save_to_csv()
                         # SERIAL ACTIONS
                         ser.write("r".encode())
-                    elif check == 'NonStandar':
-                        quality = 'NonStandar'
-                        nonStandar_counter += 1
+                    elif check == 'Reguler':
+                        quality = 'Reguler'
+                        reguler_counter += 1
                         total_counter += 1
                         # Update the text area
-                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, nonStandar_counter, total_counter)
+                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, reguler_counter, total_counter)
+                        # Save to CSV
+                        save_to_csv()
+                        # SERIAL ACTIONS
+                        ser.write("l".encode())
+                    elif check == 'Reject':
+                        quality = 'Reject'
+                        reject_counter += 1
+                        total_counter += 1
+                        # Update the text area
+                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, reject_counter, total_counter)
+                        # Save to CSV
+                        save_to_csv()
+                        # SERIAL ACTIONS
+                        ser.write("l".encode())
+                    elif check == 'EdibleT':
+                        quality = 'Edible Telungkup'
+                        edibleT_counter += 1
+                        total_counter += 1
+                        # Update the text area
+                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, edibleT_counter, total_counter)
+                        # Save to CSV
+                        save_to_csv()
+                        # SERIAL ACTIONS
+                        ser.write("r".encode())
+                    elif check == 'RegulerT':
+                        quality = 'Reguler Telungkup'
+                        regulerT_counter += 1
+                        total_counter += 1
+                        # Update the text area
+                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, regulerT_counter, total_counter)
+                        # Save to CSV
+                        save_to_csv()
+                        # SERIAL ACTIONS
+                        ser.write("l".encode())
+                    elif check == 'RejectT':
+                        quality = 'Reject Telungkup'
+                        rejectT_counter += 1
+                        total_counter += 1
+                        # Update the text area
+                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, rejectT_counter, total_counter)
                         # Save to CSV
                         save_to_csv()
                         # SERIAL ACTIONS
