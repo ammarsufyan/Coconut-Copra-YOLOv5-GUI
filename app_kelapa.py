@@ -18,7 +18,7 @@ ser = serial.Serial('COM14', 115200)
 infrared = serial.Serial('COM4', 115200)
 
 # Load the model
-model = torch.hub.load('yolov5', 'custom', path='models/KelapaV3_YOLOv5.pt', source='local')
+model = torch.hub.load('yolov5', 'custom', path='models/KelapaV4_model.pt', source='local')
 
 # Declare variables
 get_datetime_file = datetime.now()
