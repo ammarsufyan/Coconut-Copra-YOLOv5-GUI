@@ -1,3 +1,23 @@
+# =======DO NOT EDIT=======
 opencv-python==4.8.0.74
 Pillow==9.4.0
 pyserial
+
+# =======FROM YOLOV5=======
+gitpython>=3.1.30
+matplotlib>=3.3
+numpy>=1.18.5
+psutil
+PyYAML>=5.3.1
+requests>=2.23.0
+scipy>=1.4.1
+thop>=0.1.1  
+setuptools>=65.5.1
+tqdm>=4.64.0
+pandas>=1.1.4
+seaborn>=0.11.0
+
+# =======TORCH=======
+# see https://pytorch.org/get-started/locally (recommended)
+#torch>=1.7.0  
+#torchvision>=0.8.1
