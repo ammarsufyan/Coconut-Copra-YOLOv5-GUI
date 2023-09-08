@@ -161,4 +161,6 @@ cython_debug/
 yolov5/
 
 #Additional
-log_kelapa_*.csv
+log_coconut_*.csv
+log_copra_*.csv
+capture_img.jpg
