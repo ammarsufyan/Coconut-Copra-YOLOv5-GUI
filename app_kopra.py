@@ -238,7 +238,7 @@ def start_detection():
     global video_capture
     if video_capture is None:
         # Open the video capture device with the desired resolution
-        video_capture = cv2.VideoCapture(2)  # Use 0 for the default camera
+        video_capture = cv2.VideoCapture(0)  # Use 0 for the default camera
         
         # Update the frame
         update_frame()
