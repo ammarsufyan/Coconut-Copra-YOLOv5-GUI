@@ -1,24 +1,22 @@
-import numpy as np
-from PIL import Image
-from time import time
-from time import sleep
-import torch
-import cv2
-import serial
-import os
-import tkinter as tk
-from tkinter import ttk
-from tkinter import font
-from tkinter import messagebox
-from PIL import ImageTk, Image
 import csv
+import os
+import threading
+import tkinter as tk
 from datetime import datetime
+from time import sleep, time
+from tkinter import font, messagebox, ttk
+import cv2
+import numpy as np
+import serial
+import torch
+from PIL import Image, ImageTk
 
+# Serial initialization
 ser = serial.Serial('COM14', 115200)
 infrared = serial.Serial('COM4', 115200)
 
 # Load the model
-model = torch.hub.load('yolov5', 'custom', path='models/KopraV6_model.pt', source='local')
+model = torch.hub.load('yolov5', 'custom', path='models/KopraV8_CungkilCampur.pt', source='local')
 
 # Declare variables
 get_datetime_file = datetime.now()
@@ -31,6 +29,10 @@ edibleT_counter = 0
 regulerT_counter = 0
 rejectT_counter = 0
 notDefined_counter = 0
+
+# flag running
+global running
+running = False
 
 def show_alert(subject, message):
     messagebox.showinfo(subject, message)
@@ -63,8 +65,8 @@ def save_to_csv():
         writer.writerow(header_row)  # Write header row
         writer.writerows(data_rows)  # Write data rows
     
-def update_frame():
-    global video_capture
+def update_frame(video_capture):
+    # global video_capture
     global total_counter
     global edible_counter
     global reguler_counter
@@ -74,13 +76,10 @@ def update_frame():
     global rejectT_counter
     global notDefined_counter
 
-    if video_capture is not None:
+    while running:
         # Read the video frame
         ret, frame = video_capture.read()
         if ret:
-            # Resize the frame for compatibility (optional)
-            #resized_frame = cv2.resize(frame, (640, 640))
-
             # Convert the frame to RGB format
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -94,9 +93,8 @@ def update_frame():
             if (infrared.inWaiting() > 0):
                 baca = infrared.readline()
                 print(baca)
-                if baca == b'OBSTACLE\r\n':
-                    # Trigger 'OBSTACLE' from Serial
-                    
+                # Trigger 'OBSTACLE' from Serial
+                if baca == b'OBSTACLE\r\n':            
                     # Create the directory if it doesn't exist
                     os.makedirs(os.path.dirname("capture_img/"), exist_ok=True)
                     # Automatically capture the frame
@@ -217,44 +215,36 @@ def update_frame():
                         # SERIAL ACTIONS
                         ser.write("l".encode())
                     elif check == 'NotDefined':
-                        # quality = 'NotDefined'
-                        # notDefined_counter += 1
-                        # total_counter += 1
-                        # # Update the text area
-                        # update_text(formatted_datetime, quality, accuracy, object_width, object_height, notDefined_counter, total_counter)
-                        # # Save to CSV
-                        # save_to_csv()
-                        # # SERIAL ACTIONS
                         pass
+                    
+                    # Set the time to get the frame after
+                    sleep(0.03)
 
-            # Schedule the next frame update
-            image_label.after(30, update_frame)
-    else:
-        # Display the placeholder image if no frame is available
-        image_label.configure(image=placeholder_image)
-        image_label.image = placeholder_image
+def black_screen():
+    sleep(0.5)
+    image_label.configure(image=placeholder_image)
+    image_label.image = placeholder_image
 
 def start_detection():
-    global video_capture
+    global video_capture, running
     if video_capture is None:
-        # Open the video capture device with the desired resolution
-        video_capture = cv2.VideoCapture(0)  # Use 0 for the default camera
-        
-        # Update the frame
-        update_frame()
+        running = True
+        # Start the camera
+        video_capture = cv2.VideoCapture(0) # Use 0 for the default camera
+        x = threading.Thread(target=update_frame, args=[video_capture], daemon=True)
+        x.start()
     else:
         show_alert("Information", "Detection is already running")
-    
 
 def stop_detection():
-    global video_capture
+    global video_capture, running
     if video_capture is not None:
+        running = False
         # Stop the camera
         video_capture.release()
         video_capture = None
-        
-        # Update the frame
-        update_frame()
+        x = threading.Thread(target=black_screen, daemon=True)
+        x.start()
     else:
         show_alert("Information", "Detection is not running")
 
