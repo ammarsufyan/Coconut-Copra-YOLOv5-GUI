@@ -1,38 +1,32 @@
-import csv
-import os
-import threading
-import tkinter as tk
-from datetime import datetime
-from time import sleep, time
-from tkinter import font, messagebox, ttk
-import cv2
 import numpy as np
-import serial
+from PIL import Image
+from time import time
+from time import sleep
 import torch
-from PIL import Image, ImageTk
+import cv2
+import serial
+import os
+import tkinter as tk
+from tkinter import ttk
+from tkinter import font
+from tkinter import messagebox
+from PIL import ImageTk, Image
+import csv
+from datetime import datetime
 
-# Serial initialization
 ser = serial.Serial('COM14', 115200)
 infrared = serial.Serial('COM4', 115200)
 
 # Load the model
-model = torch.hub.load('yolov5', 'custom', path='models/KopraV8_CungkilCampur.pt', source='local')
+model = torch.hub.load('yolov5', 'custom', path='../models/KelapaV4_YOLOv8m_ObjectDetection/train/exp/weights/best.pt', source='local')
 
 # Declare variables
 get_datetime_file = datetime.now()
-csv_file_path = "log/log_copra_{}.csv".format(get_datetime_file.strftime("%Y-%m-%d-%S"))
+csv_file_path = "log/log_coconut_{}.csv".format(get_datetime_file.strftime("%Y-%m-%d-%S"))
 total_counter = 0
-edible_counter = 0
-reguler_counter = 0
-reject_counter = 0
-edibleT_counter = 0
-regulerT_counter = 0
-rejectT_counter = 0
+standar_counter = 0
+nonStandar_counter = 0
 notDefined_counter = 0
-
-# flag running
-global running
-running = False
 
 def show_alert(subject, message):
     messagebox.showinfo(subject, message)
@@ -65,21 +59,20 @@ def save_to_csv():
         writer.writerow(header_row)  # Write header row
         writer.writerows(data_rows)  # Write data rows
     
-def update_frame(video_capture):
-    # global video_capture
+def update_frame():
+    global video_capture
     global total_counter
-    global edible_counter
-    global reguler_counter
-    global reject_counter
-    global edibleT_counter
-    global regulerT_counter
-    global rejectT_counter
+    global standar_counter
+    global nonStandar_counter
     global notDefined_counter
 
-    while running:
+    if video_capture is not None:
         # Read the video frame
         ret, frame = video_capture.read()
         if ret:
+            # Resize the frame for compatibility (optional)
+            #resized_frame = cv2.resize(frame, (640, 640))
+
             # Convert the frame to RGB format
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -93,8 +86,9 @@ def update_frame(video_capture):
             if (infrared.inWaiting() > 0):
                 baca = infrared.readline()
                 print(baca)
-                # Trigger 'OBSTACLE' from Serial
-                if baca == b'OBSTACLE\r\n':            
+                if baca == b'OBSTACLE\r\n':
+                    # Trigger 'OBSTACLE' from Serial
+                    
                     # Create the directory if it doesn't exist
                     os.makedirs(os.path.dirname("capture_img/"), exist_ok=True)
                     # Automatically capture the frame
@@ -154,103 +148,71 @@ def update_frame(video_capture):
                     except:
                         check = "NotDefined"
                         
-                    if check == 'Edible':
-                        quality = 'Edible'
-                        edible_counter += 1
+                    if check == 'Standar':
+                        quality = 'Standar'
+                        standar_counter += 1
                         total_counter += 1
                         # Update the text area
-                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, edible_counter, total_counter)
+                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, standar_counter, total_counter)
                         # Save to CSV
                         save_to_csv()
                         # SERIAL ACTIONS
                         ser.write("r".encode())
-                    elif check == 'Reguler':
-                        quality = 'Reguler'
-                        reguler_counter += 1
+                    elif check == 'NonStandar':
+                        quality = 'NonStandar'
+                        nonStandar_counter += 1
                         total_counter += 1
                         # Update the text area
-                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, reguler_counter, total_counter)
-                        # Save to CSV
-                        save_to_csv()
-                        # SERIAL ACTIONS
-                        ser.write("l".encode())
-                    elif check == 'Reject':
-                        quality = 'Reject'
-                        reject_counter += 1
-                        total_counter += 1
-                        # Update the text area
-                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, reject_counter, total_counter)
-                        # Save to CSV
-                        save_to_csv()
-                        # SERIAL ACTIONS
-                        ser.write("l".encode())
-                    elif check == 'EdibleT':
-                        quality = 'Edible Telungkup'
-                        edibleT_counter += 1
-                        total_counter += 1
-                        # Update the text area
-                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, edibleT_counter, total_counter)
-                        # Save to CSV
-                        save_to_csv()
-                        # SERIAL ACTIONS
-                        ser.write("r".encode())
-                    elif check == 'RegulerT':
-                        quality = 'Reguler Telungkup'
-                        regulerT_counter += 1
-                        total_counter += 1
-                        # Update the text area
-                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, regulerT_counter, total_counter)
-                        # Save to CSV
-                        save_to_csv()
-                        # SERIAL ACTIONS
-                        ser.write("l".encode())
-                    elif check == 'RejectT':
-                        quality = 'Reject Telungkup'
-                        rejectT_counter += 1
-                        total_counter += 1
-                        # Update the text area
-                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, rejectT_counter, total_counter)
+                        update_text(formatted_datetime, quality, accuracy, object_width, object_height, nonStandar_counter, total_counter)
                         # Save to CSV
                         save_to_csv()
                         # SERIAL ACTIONS
                         ser.write("l".encode())
                     elif check == 'NotDefined':
+                        # quality = 'NotDefined'
+                        # notDefined_counter += 1
+                        # total_counter += 1
+                        # # Update the text area
+                        # update_text(formatted_datetime, quality, accuracy, object_width, object_height, notDefined_counter, total_counter)
+                        # # Save to CSV
+                        # save_to_csv()
+                        # # SERIAL ACTIONS
                         pass
-                    
-                    # Set the time to get the frame after
-                    sleep(0.03)
 
-def black_screen():
-    sleep(0.5)
-    image_label.configure(image=placeholder_image)
-    image_label.image = placeholder_image
+            # Schedule the next frame update
+            image_label.after(30, update_frame)
+    else:
+        # Display the placeholder image if no frame is available
+        image_label.configure(image=placeholder_image)
+        image_label.image = placeholder_image
 
 def start_detection():
-    global video_capture, running
+    global video_capture
     if video_capture is None:
-        running = True
-        # Start the camera
-        video_capture = cv2.VideoCapture(0) # Use 0 for the default camera
-        x = threading.Thread(target=update_frame, args=[video_capture], daemon=True)
-        x.start()
+        # Open the video capture device with the desired resolution
+        video_capture = cv2.VideoCapture(0)  # Use 0 for the default camera
+        
+        # Update the frame
+        update_frame()
     else:
         show_alert("Information", "Detection is already running")
+    
 
 def stop_detection():
-    global video_capture, running
+    global video_capture
     if video_capture is not None:
-        running = False
         # Stop the camera
         video_capture.release()
         video_capture = None
-        x = threading.Thread(target=black_screen, daemon=True)
-        x.start()
+        
+        # Update the frame
+        update_frame()
     else:
         show_alert("Information", "Detection is not running")
 
 # Create the main window
 window = tk.Tk()
-window.title("Copra Detection GUI")
+window.title("Coconut Detection GUI")
 video_capture = None
 
 # Create the left frame
